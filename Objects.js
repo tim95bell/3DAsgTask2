@@ -1,6 +1,7 @@
 var vertices = [];
 var normals = [];
 
+
 /* ----------------  RECT ---------------- */
 // defined from center
 function Rect(loc, width, height, color){
@@ -89,12 +90,12 @@ face(1, 5, 6, 2);
 
 // front, right, back, left, top, bottom
 //front
-normals.push( normalize(vec3(0, -1, 0)) );
-normals.push( normalize(vec3(0, -1, 0)) );
-normals.push( normalize(vec3(0, -1, 0)) );
-normals.push( normalize(vec3(0, -1, 0)) );
-normals.push( normalize(vec3(0, -1, 0)) );
-normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, 1, 0)) );
 //right
 normals.push( normalize(vec3(1, 0, 0)) );
 normals.push( normalize(vec3(1, 0, 0)) );
@@ -103,12 +104,12 @@ normals.push( normalize(vec3(1, 0, 0)) );
 normals.push( normalize(vec3(1, 0, 0)) );
 normals.push( normalize(vec3(1, 0, 0)) );
 //back
-normals.push( normalize(vec3(0, 1, 0)) );
-normals.push( normalize(vec3(0, 1, 0)) );
-normals.push( normalize(vec3(0, 1, 0)) );
-normals.push( normalize(vec3(0, 1, 0)) );
-normals.push( normalize(vec3(0, 1, 0)) );
-normals.push( normalize(vec3(0, 1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
+normals.push( normalize(vec3(0, -1, 0)) );
 //left
 normals.push( normalize(vec3(-1, 0, 0)) );
 normals.push( normalize(vec3(-1, 0, 0)) );
@@ -117,19 +118,19 @@ normals.push( normalize(vec3(-1, 0, 0)) );
 normals.push( normalize(vec3(-1, 0, 0)) );
 normals.push( normalize(vec3(-1, 0, 0)) );
 //top
-normals.push( normalize(vec3(0, 0, 1)) );
-normals.push( normalize(vec3(0, 0, 1)) );
-normals.push( normalize(vec3(0, 0, 1)) );
-normals.push( normalize(vec3(0, 0, 1)) );
-normals.push( normalize(vec3(0, 0, 1)) );
-normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, -1)) );
 //bottom
-normals.push( normalize(vec3(0, 0, -1)) );
-normals.push( normalize(vec3(0, 0, -1)) );
-normals.push( normalize(vec3(0, 0, -1)) );
-normals.push( normalize(vec3(0, 0, -1)) );
-normals.push( normalize(vec3(0, 0, -1)) );
-normals.push( normalize(vec3(0, 0, -1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
+normals.push( normalize(vec3(0, 0, 1)) );
 
 
 Cube.prototype.draw = function(){
@@ -239,7 +240,10 @@ Cone.prototype.draw = function(){
 }
 Cone.prototype.setTrs = function(trs){
   this.trs = trs;
-  this.circle.trs = mult( trs, translate( 0, 0, -0.5) );
+  var circleT = translate( 0, 0, -0.5);
+  var circleR = rotate(180, [1,0,0]);
+  // var circleR = mat4();
+  this.circle.trs = mult( trs,  mult(circleT, circleR) );
 }
 
 /* ----------------  TREE ---------------- */
@@ -292,7 +296,7 @@ function Parthenon(vLoc, fScale){
   this.width = Parthenon.WIDTH*fScale;
   this.length = Parthenon.LENGTH*fScale;
   this.height = Parthenon.HEIGHT*fScale;
-  this.color = vec4(0.5, 0.5, 0.5, 1);
+  this.color = vec4(0.65, 0.65, 0.65, 1);
   this.base = new Rect( vec3(0, 0, 0.01), 8, 13, this.color );
   this.pillars = [];
   this.lintels = [];
@@ -303,10 +307,10 @@ function Parthenon(vLoc, fScale){
     var y = this.loc[1]-this.length/2 + (diam/2) + (i*(diam+this.length/3/2));
     var topX = this.loc[0]+this.width/2-(diam/2);
     var bottomX = this.loc[0]-this.width/2 + diam/2;
-    // var top = new Cylinder(this.color);
-    // var bottom = new Cylinder(this.color);
-    var top = new Cylinder(vec4(0,0,0,1));
-    var bottom = new Cylinder(vec4(0,0,0,1));
+    var top = new Cylinder(this.color);
+    var bottom = new Cylinder(this.color);
+    // var top = new Cylinder(vec4(0.1,0.1,0.1,1));
+    // var bottom = new Cylinder(vec4(0.1,0.1,0.1,1));
     var s = scalem(diam, diam, this.height); // maybe this shouldnt be height
     top.trs = mult( translate(topX, y, this.height/2), s );
     bottom.trs = mult( translate(bottomX, y, this.height/2), s );
@@ -319,10 +323,10 @@ function Parthenon(vLoc, fScale){
     var x = this.loc[0]-this.width/2 + (diam/2) + (i*(diam+gap));//diam+this.width/5/2));
     var topY = this.loc[1]+this.length/2-(diam/2);
     var bottomY = this.loc[1]-this.length/2+diam/2;
-    // var top = new Cylinder(this.color);
-    // var bottom = new Cylinder(this.color);
-    var top = new Cylinder(vec4(0,0,0,1));
-    var bottom = new Cylinder(vec4(0,0,0,1));
+    var top = new Cylinder(this.color);
+    var bottom = new Cylinder(this.color);
+    // var top = new Cylinder(vec4(0.1,0.1,0.1,1));
+    // var bottom = new Cylinder(vec4(0.1,0.1,0.1,1));
     var s = scalem(diam, diam, this.height); // maybe this shouldnt be height
     top.setTrs( mult( translate(x, topY, this.height/2), s ) );
     bottom.setTrs( mult( translate(x, bottomY, this.height/2), s ) );

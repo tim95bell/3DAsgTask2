@@ -14,6 +14,8 @@ var eye = vec3(0.0, -48.0, 2.0);
 var at = vec3(0.0, 0.0, 2.0);
 var up = vec3(0.0, 0.0, 1.0);
 
+var atEyeDistance = subtract(at, eye);
+
 // uniforms
 var worldView, projection;
 var worldViewLoc, projLoc, colLoc, modelViewLoc;
@@ -22,7 +24,7 @@ var worldViewLoc, projLoc, colLoc, modelViewLoc;
 var left, right, foward, backward;
 left = right = foward = backward = false;
 // foward move is the equivilant of at, except does not get rotated up and down
-var fowardMove;
+var fowardMove = at.slice();
 
 // pause and mouse loc system
 var paused = true;
@@ -38,8 +40,11 @@ var grass = new Rect( vec3(0, 0, 0), grassSize, grassSize, vec4(0.4, 0.8, 0.2, 1
 var path1 = new Rect( vec3(-5, 0, 0.001), 2, grassSize, vec4(0.0, 0.0, 0.0, 1.0) );
 var path2 = new Rect( vec3(5, 0, 0.001), 2, grassSize, vec4(0.0, 0.0, 0.0, 1.0) );
 //parthenon
-var parthenonScale = 1.4;
+var parthenonScale = 2.1;
 var parthenon = new Parthenon(vec3(0, grassSize/2-(Parthenon.LENGTH/2*parthenonScale), Parthenon.HEIGHT/2*parthenonScale), parthenonScale);
+// Sun
+var theSun = new Circle(vec4(0.95, 0.72, 0.07, 1.0));
+theSun.trs = mult(translate(150, -150, 37.5), mult(rotate(90, [1,0,0]), scalem(20,20,20)) );
 
 window.onload = function init() {
     genTrees();
@@ -65,6 +70,15 @@ window.onload = function init() {
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
+
+    // TODO: this is a test
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
+
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
 
     // uniforms
     colLoc = gl.getUniformLocation( program, "color" );
@@ -155,7 +169,7 @@ window.onload = function init() {
       return;
 
     var x = e.movementX;
-    var y = e.movementY;
+    var y = e.movementY * 0.3;
 
     var fowardV = subtract(at, eye);
     // var fowardDirectionV = normalize(fowardV);
@@ -167,11 +181,16 @@ window.onload = function init() {
     at = scale(fowardV.length, at);
     at = newDirV;
 
+    newDirV = add(fowardMove, scale(x, normalize(rightDirectionV)) );
+    fowardMove = add(newDirV, fowardMove);
+    fowardMove = scale(fowardV.length, fowardMove);
+    fowardMove = newDirV;
+
     // y movement
-    // var newDirV = add(at, scale(-y, normalize(up)) );
-    // at = add(newDirV, at);
-    // at = scale(fowardV.length, at);
-    // at = newDirV;
+    newDirV = add(at, scale(-y, normalize(up)) );
+    at = add(newDirV, at);
+    at = scale(fowardV.length, at);
+    at = newDirV;
   };
 
   render();
@@ -187,9 +206,14 @@ function update(){
   if( !(moveLeft || moveRight || moveFoward || moveBackward) )
     return;
 
-  var fowardV = subtract(at, eye);
+  // var fowardV = subtract(at, eye);
+  // var fowardDirectionV = normalize(fowardV);
+  // var rightDirectionV = cross(fowardV, up);
+
+  var fowardV = subtract(fowardMove, eye);
   var fowardDirectionV = normalize(fowardV);
   var rightDirectionV = cross(fowardV, up);
+
   var speed = 0.4;
 
   // keep speed the same when moving diagonal
@@ -202,17 +226,21 @@ function update(){
 
   if(moveFoward){
     at = add(at, fowardAdd);
+    fowardMove = add(fowardMove, fowardAdd);
     eye = add(eye, fowardAdd);
   } else if(moveBackward){
     at = subtract(at, fowardAdd);
+    fowardMove = subtract(fowardMove, fowardAdd);
     eye = subtract(eye, fowardAdd);
   }
 
   if(moveLeft){
     at = subtract(at, sideAdd);
+    fowardMove = subtract(fowardMove, sideAdd);
     eye = subtract(eye, sideAdd);
   } else if(moveRight){
     at = add(at, sideAdd);
+    fowardMove = add(fowardMove, sideAdd);
     eye = add(eye, sideAdd);
   }
 } // end update()
@@ -236,6 +264,8 @@ function render() {
     trees[i].draw();
   // draw parthenon
   parthenon.draw();
+  // draw Sun
+  theSun.draw();
 
   // only update if not paused, otherwise cannot be moving
   if(!paused)
