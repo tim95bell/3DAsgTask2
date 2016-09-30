@@ -191,6 +191,9 @@ window.onload = function init() {
     at = add(newDirV, at);
     at = scale(fowardV.length, at);
     at = newDirV;
+
+    // TODO: delete this below
+    fowardMove = at;
   };
 
   render();
@@ -245,6 +248,26 @@ function update(){
   }
 } // end update()
 
+
+var hyp = 0.5/Math.cos(radians(45));
+var height = (Math.sin(radians(45))*hyp);
+
+var angleR = Math.PI*2/50;
+var angle = 360/50;
+// var width = (Math.cos(angleR*2)-Math.cos(angleR))*2.7;
+var width = 2*Math.PI*0.5/49;
+var triangleBaseTrs = mult( mult( translate(0, -0.25, height/2), rotate(45, [1,0,0]) ), scalem(width, hyp, 1) );
+
+var triangles = [];
+for(var i = 0; i < 50; ++i){
+  var t = new Triangle(vec4(1,1,1,1));
+  t.setTrs( mult( rotate(i*angle, [0,0,1]), triangleBaseTrs ) );
+  triangles.push(t);
+}
+
+var testRect = new Rect(vec4(0,0,0,0), 3, 3, vec4(0,0,0,1));
+testRect.setTrs( rotate(90, [1,0,0]) );
+
 function render() {
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -266,6 +289,7 @@ function render() {
   parthenon.draw();
   // draw Sun
   theSun.draw();
+
 
   // only update if not paused, otherwise cannot be moving
   if(!paused)
