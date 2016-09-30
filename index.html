@@ -10,12 +10,12 @@
     color: white;
     background: black;
     font-size: 3em;
-    /*padding: 50px;*/
     width: 400px;
     height: 100px;
     position: absolute;
     top: 200px;
     left: 280px;
+    text-align: center;
   }
 
   #gl-canvas {
@@ -35,7 +35,6 @@ varying vec3 fNormal;
 void main()
 {
     gl_Position = projection*worldView*modelView*vPosition;
-
     fNormal = -(modelView*vec4(vNormal,0.0)).xyz;
 }
 </script>
@@ -44,25 +43,23 @@ void main()
 precision mediump float;
 
 uniform vec4 color;
-
 varying vec3 fNormal;
 
-void
-main()
+void main()
 {
   float ambientLight = 0.4;
-  vec3 light = normalize(vec3(-1.0,1.0,-1.0));
+  vec3 lightDirection = normalize(vec3(-1.0,1.0,-1.0));
   vec3 lightAmount = color.xyz;
 
-  float lightMultiplier = dot( normalize(fNormal), normalize(light) );
+  float lightMultiplier = dot( normalize(fNormal), normalize(lightDirection) );
   if(lightMultiplier < 0.0)
     lightMultiplier = 0.0;
 
-  // lightMultiplier *= 1.0;
-
   lightAmount *= lightMultiplier + ambientLight;
 
-    gl_FragColor = vec4(lightAmount, 1.0);
+  gl_FragColor = vec4(lightAmount, 1.0);
+
+    // FOR DRAWING WITHOUT LIGHTING
     // gl_FragColor = color;
 }
 </script>
@@ -75,13 +72,14 @@ main()
 
 <body>
 
-
 <canvas id="gl-canvas" width="960" height="480" >
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 
 <div id="clickToPlay">
-  Click To Play
+  <p style="font-size: 1em;">Click To Play</p>
+  <p style="font-size: 0.4em;">Move: W,A,S,D</p>
+  <p style="font-size: 0.4em;">Look: Mouse</p>
 </div>
 
 </body>

@@ -42,9 +42,6 @@ var path2 = new Rect( vec3(5, 0, 0.001), 2, grassSize, vec4(0.0, 0.0, 0.0, 1.0) 
 //parthenon
 var parthenonScale = 2.1;
 var parthenon = new Parthenon(vec3(0, grassSize/2-(Parthenon.LENGTH/2*parthenonScale), Parthenon.HEIGHT/2*parthenonScale), parthenonScale);
-// Sun
-var theSun = new Circle(vec4(0.95, 0.72, 0.07, 1.0));
-theSun.trs = mult(translate(150, -150, 37.5), mult(rotate(90, [1,0,0]), scalem(20,20,20)) );
 
 window.onload = function init() {
     genTrees();
@@ -59,7 +56,6 @@ window.onload = function init() {
     gl.clearColor( 0.6, 0.8, 1.0, 1.0 );
     gl.enable(gl.DEPTH_TEST);
 
-
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
@@ -71,7 +67,6 @@ window.onload = function init() {
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
-    // TODO: this is a test
     var nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
@@ -95,8 +90,6 @@ window.onload = function init() {
         return;
 
   		var key = String.fromCharCode(event.keyCode);
-  	  // var fowardV = subtract(at, eye);
-      // var rightDirectionV = cross(fowardV, up);
   		switch( key ) {
   		  case 'W':
           foward = true;
@@ -110,19 +103,6 @@ window.onload = function init() {
   		  case 'D':
           right = true;
   		    break;
-          // dont do rotation bellow as it is done with mouse
-  		  // case 'Q':
-        //   var newDirV = add(at, normalize(rightDirectionV) );
-        //   at = subtract(newDirV, at);
-        //   at = scale(fowardV.length, at);
-        //   at = newDirV;
-  		  //   break;
-  		  // case 'E':
-        //   var newDirV = subtract(at, normalize(rightDirectionV) );
-        //   at = subtract(newDirV, at);
-        //   at = scale(fowardV.length, at);
-        //   at = newDirV;
-  		  //   break;
   		}
   	};
 
@@ -172,7 +152,6 @@ window.onload = function init() {
     var y = e.movementY * 0.3;
 
     var fowardV = subtract(at, eye);
-    // var fowardDirectionV = normalize(fowardV);
     var rightDirectionV = cross(fowardV, up);
 
     // x movement
@@ -192,8 +171,8 @@ window.onload = function init() {
     at = scale(fowardV.length, at);
     at = newDirV;
 
-    // TODO: delete this below
-    fowardMove = at;
+    //-------------------------- UNCOMMENT TO FLY --------------------------//
+    // fowardMove = at;
   };
 
   render();
@@ -208,10 +187,6 @@ function update(){
   // exit if no movement
   if( !(moveLeft || moveRight || moveFoward || moveBackward) )
     return;
-
-  // var fowardV = subtract(at, eye);
-  // var fowardDirectionV = normalize(fowardV);
-  // var rightDirectionV = cross(fowardV, up);
 
   var fowardV = subtract(fowardMove, eye);
   var fowardDirectionV = normalize(fowardV);
@@ -249,25 +224,6 @@ function update(){
 } // end update()
 
 
-var hyp = 0.5/Math.cos(radians(45));
-var height = (Math.sin(radians(45))*hyp);
-
-var angleR = Math.PI*2/50;
-var angle = 360/50;
-// var width = (Math.cos(angleR*2)-Math.cos(angleR))*2.7;
-var width = 2*Math.PI*0.5/49;
-var triangleBaseTrs = mult( mult( translate(0, -0.25, height/2), rotate(45, [1,0,0]) ), scalem(width, hyp, 1) );
-
-var triangles = [];
-for(var i = 0; i < 50; ++i){
-  var t = new Triangle(vec4(1,1,1,1));
-  t.setTrs( mult( rotate(i*angle, [0,0,1]), triangleBaseTrs ) );
-  triangles.push(t);
-}
-
-var testRect = new Rect(vec4(0,0,0,0), 3, 3, vec4(0,0,0,1));
-testRect.setTrs( rotate(90, [1,0,0]) );
-
 function render() {
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -287,9 +243,6 @@ function render() {
     trees[i].draw();
   // draw parthenon
   parthenon.draw();
-  // draw Sun
-  theSun.draw();
-
 
   // only update if not paused, otherwise cannot be moving
   if(!paused)
@@ -322,7 +275,6 @@ function genTrees(){
         var distance = length( subtract(loc, trees[j].loc) );
         if( distance < diam*4/2 + trees[j].diam*4/2)
           fits = false;
-
       }
       // check not on a track
       if(loc[0] + diam*1 > path1.loc[0]-path1.width/2 && loc[0] - diam*1 < path1.loc[0]+path1.width/2 ||

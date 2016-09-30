@@ -1,16 +1,15 @@
 var vertices = [];
 var normals = [];
 
+// these should all be defined from their centers
 
 /* ----------------  RECT ---------------- */
-// defined from center
 function Rect(loc, width, height, color){
   this.color = color;
   this.loc = loc;
+  // TODO: move width and height from here
   this.width = width;
   this.height = height;
-  // this.trs = mult( scalem(width, height, 1), translate(loc[0], loc[1], loc[2]) );
-  // this.trs = setTrs(loc, size, rot);
   this.trs = mult( translate(loc[0], loc[1], loc[2]), scalem(width, height, 1) );
 }
 Rect.NV = 4;
@@ -56,12 +55,7 @@ Triangle.prototype.draw = function(){
     gl.drawArrays(gl.TRIANGLES, Triangle.startIndex, Triangle.NV);
 }
 
-
-
-
 /* ----------------  CUBE ---------------- */
-// loc, widht, length, height, color
-//defined from center
 function Cube(loc, width, length, height, color){
   this.color = color;
   var s = scalem(width, length, height);
@@ -149,16 +143,15 @@ normals.push( normalize(vec3(0, 0, 1)) );
 normals.push( normalize(vec3(0, 0, 1)) );
 normals.push( normalize(vec3(0, 0, 1)) );
 
-
 Cube.prototype.draw = function(){
     gl.uniformMatrix4fv(modelViewLoc, false, flatten(this.trs) );
     gl.uniform4fv(colLoc, flatten(this.color));
-    gl.drawArrays(gl.TRIANGLES, Cube.startIndex, Cube.NV);
+    // gl.drawArrays(gl.TRIANGLES, Cube.startIndex, Cube.NV);
+    gl.drawArrays(gl.TRIANGLE_STRIP, Cube.startIndex, Cube.NV);
 }
 Cube.prototype.setTrs = function(trs){
   this.trs = trs;
 }
-
 
 /* ----------------  CIRCLE ---------------- */
 function Circle(color){
@@ -171,8 +164,6 @@ Circle.startIndex = vertices.length;
 // push on the center point
 vertices.push(vec3(0.0, 0.0, 0.0));
 var angle = Math.PI*2/(Circle.NV-2);
-/* the line above caused a problem, now its not. but the line below fixed it weirdly, incase it starts again.*/
-// var angle = Math.PI*2/Circle.NV;
 for(var i = 0; i < Circle.NV-2; ++i){
   vertices.push( vec3(Math.cos(i*angle)*0.5, Math.sin(i*angle)*0.5) );
 }
@@ -188,16 +179,11 @@ Circle.prototype.draw = function(){
 for(var i = 0; i < Circle.NV; ++i)
   normals.push( normalize(vec3(0, 0, 1)) );
 
-
 /* ----------------  CYLINDER ---------------- */
-
+// dameter of 1, height of 1
 function Cylinder(color){
-  // diameter = 1
-  // height = 1
   this.color = color;
   this.trs = mat4();
-  // this.bottomCircle = new Circle(vec4(0,0,0,1));
-  // this.topCircle = new Circle(vec4(0,0,0,1));
 }
 Cylinder.startIndex = vertices.length;
 Cylinder.NV = (Circle.NV-2)*2+2;
@@ -211,22 +197,16 @@ for(var i = 0; i < (Cylinder.NV-2)/2; ++i){
 }
 vertices.push( vec3(Math.cos(0*angle)*0.5, Math.sin(0*angle)*0.5, -0.5) );
 vertices.push( vec3(Math.cos(0*angle)*0.5, Math.sin(0*angle)*0.5, 0.5) );
-  normals.push( normalize(vec3(Math.cos(0*angle), Math.sin(0*angle), 0)) );
-  normals.push( normalize(vec3(Math.cos(0*angle), Math.sin(0*angle), 0)) );
+normals.push( normalize(vec3(Math.cos(0*angle), Math.sin(0*angle), 0)) );
+normals.push( normalize(vec3(Math.cos(0*angle), Math.sin(0*angle), 0)) );
 
 Cylinder.prototype.draw = function(){
   gl.uniformMatrix4fv(modelViewLoc, false, flatten(this.trs) );
   gl.uniform4fv(colLoc, flatten(this.color))
   gl.drawArrays(gl.TRIANGLE_STRIP, Cylinder.startIndex, Cylinder.NV);
-  // this.bottomCircle.draw();
-  // this.topCircle.draw();
 }
 Cylinder.prototype.setTrs = function(trs){
   this.trs = trs;
-  // var bottomT = translate(0, 0, -0.5);
-  // var topT = translate(0, 0, 0.5);
-  // this.bottomCircle.trs = mult(trs, bottomT);
-  // this.topCircle.trs = mult(trs, topT);
 }
 
 /* ----------------  CONE ---------------- */
@@ -235,7 +215,7 @@ function Cone(color){
   this.trs = mat4();
   this.circle = new Circle( color );
 }
-//------------------------ TRIANGLE FAN, NORMALS DONT WORK ------------------------//
+        ///////// TRIANGLE FAN, NORMALS DONT WORK //////////
 // Cone.startIndex = vertices.length;
 // Cone.NV = 50;
 // var angle = Math.PI*2/(Cone.NV-1-1);
@@ -244,13 +224,12 @@ function Cone(color){
 // for(var i = 0; i < Cone.NV-1-1; ++i){
 //   vertices.push( vec3( Math.cos(i*angle)*0.5, Math.sin(i*angle)*0.5, -0.5) );
 //
-//   // TODO: these normals need to be fixed
 //   normals.push( normalize(vec3(Math.cos(i*angle), Math.sin(i*angle), 0)) );
 // }
 // vertices.push( vec3( Math.cos(0*angle)*0.5, Math.sin(0*angle)*0.5, -0.5) );
 // normals.push( normalize(vec3(Math.cos(0*angle), Math.sin(0*angle), 0)) );
 
-//------------------------ TRIANGLES, NORMALS WORK ------------------------//
+        ///////// TRIANGLES, NORMALS WORK //////////
 Cone.startIndex = vertices.length;
 Cone.NV = 3*150;
 var angle = Math.PI*2/(Cone.NV/3-1);
@@ -259,7 +238,6 @@ for(var i = 0; i < Cone.NV/3; ++i){
   vertices.push( vec3( Math.cos((i+1)*angle)*0.5, Math.sin((i+1)*angle)*0.5, -0.5) );
   vertices.push( vec3( 0, 0, 0.5) );
 
-  // TODO: these normals need to be fixed
   var v1 = subtract( vertices[vertices.length-1], vertices[vertices.length-2] );
   var v2 = subtract( vertices[vertices.length-1], vertices[vertices.length-3] );
   var normal = cross(v2, v1);
@@ -268,26 +246,14 @@ for(var i = 0; i < Cone.NV/3; ++i){
   normals.push(normal);
 }
 
-  // vertices.push( vec3( Math.cos(0*angle)*0.5, Math.sin(0*angle)*0.5, -0.5) );
-  // vertices.push( vec3( Math.cos(1*angle)*0.5, Math.sin(1*angle)*0.5, -0.5) );
-  // vertices.push( vec3( 0, 0, 0.5) );
-  // var v1 = subtract( vertices[vertices.length-1], vertices[vertices.length-2] );
-  // var v2 = subtract( vertices[vertices.length-1], vertices[vertices.length-3] );
-  // var normal = cross(v2, v1);
-  // normals.push(normal);
-  // normals.push(normal);
-  // normals.push(normal);
-
-
-
 Cone.prototype.draw = function(){
   gl.uniformMatrix4fv(modelViewLoc, false, flatten(this.trs) );
   gl.uniform4fv(colLoc, flatten(this.color))
 
-  //------------------------ TRIANGLE FAN, NORMALS DONT WORK ------------------------//
+        ///////// TRIANGLE_FAN, NORMALS DONT WORK //////////
   // gl.drawArrays(gl.TRIANGLE_FAN, Cone.startIndex, Cone.NV);
 
-  //------------------------ TRIANGLES, NORMALS WORK ------------------------//
+        ///////// TRIANGLES, NORMALS WORK //////////
   gl.drawArrays(gl.TRIANGLES, Cone.startIndex, Cone.NV);
 
   this.circle.draw();
@@ -321,16 +287,12 @@ Tree.prototype.setTrs = function(trs){
 
   // cylider
   var cylinderT = translate(0, 0, 0.5);
-  // this.cylinder.trs = mult(cylinderT, trs);
-  // console.log(cylinderT);
   this.cylinder.setTrs(mult(this.trs, cylinderT) );
 
   //cone
   var coneS = scalem(4, 4, 0.6);
   var coneT = translate(0, 0, 1 + (0.6*0.5)); // 0.6*0.3 is accounting for the scaling
-
   this.cone.setTrs( mult(this.trs, mult(coneT, coneS)) );
-  // console.log(coneT);
 }
 
 /* ----------------  ROOF ---------------- */
@@ -361,52 +323,11 @@ Roof.prototype.setTrs = function(trs){
   this.rightTriangle.setTrs( mult(trs, rightTriangleTrs));
 }
 Roof.prototype.draw = function(){
-  gl.uniformMatrix4fv(modelViewLoc, false, flatten(this.trs) );
-  gl.uniform4fv(colLoc, flatten(this.color));
-
   this.frontRect.draw();
   this.backRect.draw();
   this.leftTriangle.draw();
   this.rightTriangle.draw();
-
-  // gl.drawArrays(gl.TRIANGLE_STRIP, Roof.frontRectStartIndex, Roof.rectNv);
-  // gl.drawArrays(gl.TRIANGLE_STRIP, Roof.backRectStartIndex, Roof.rectNv);
-  // gl.drawArrays(gl.TRIANGLES, Roof.leftTriStartIndex, Roof.triNv);
-  // gl.drawArrays(gl.TRIANGLES, Roof.rightTriStartIndex, Roof.triNv);
 }
-  // var w = Parthenon.WIDTH;
-  // var l = Parthenon.LENGTH;
-  // var h = Parthenon.HEIGHT;
-  // var points = [
-  //    vec3(-w/2, -l/2, h/2),
-  //    vec3(w/2, -l/2, h/2),
-  //    vec3(w/2, l/2, h/2),
-  //    vec3(-w/2, 0, h/2+h/2/8),
-  //    vec3(w/2, 0,  h/2+h/2/8)
-  // ];
-  // Roof.rectNv = 4;
-  // Roof.frontRectStartIndex = vertices.length;
-  // // push front Rect
-  // vertices.push(vec3(points[5]), vec3(points[2]), vec3(points[3]), vec3(points[6]));
-  //
-  // Roof.backRectStartIndex = vertices.length;
-  // // push back Rect
-  // vertices.push(vec3(points[1]), vec3(points[5]), vec3(points[6]), vec3(points[4]));
-  //
-  // Roof.triNv = 3;
-  // Roof.leftTriStartIndex = vertices.length;
-  // // push left triangle
-  // vertices.push(vec3(points[1]), vec3(points[2]), vec3(points[5]));
-  //
-  // Roof.rightTriStartIndex = vertices.length;
-  // // push right triangle
-  // vertices.push(vec3(points[3]), vec3(points[4]), vec3(points[6]));
-
-
-
-
-
-
 
 /* ----------------  PARTHENON ---------------- */
 function Parthenon(vLoc, fScale){
@@ -421,7 +342,8 @@ function Parthenon(vLoc, fScale){
   this.lintels = [];
   this.roof = new Roof(this.color);
   this.trs = null;
-  // along width
+
+  // pillars along width
   var diam = this.length/4/2;
   for(var i = 0; i < 4; ++i){
     var y = this.loc[1]-this.length/2 + (diam/2) + (i*(diam+this.length/3/2));
@@ -429,15 +351,13 @@ function Parthenon(vLoc, fScale){
     var bottomX = this.loc[0]-this.width/2 + diam/2;
     var top = new Cylinder(this.color);
     var bottom = new Cylinder(this.color);
-    // var top = new Cylinder(vec4(0.1,0.1,0.1,1));
-    // var bottom = new Cylinder(vec4(0.1,0.1,0.1,1));
     var s = scalem(diam, diam, this.height); // maybe this shouldnt be height
     top.trs = mult( translate(topX, y, this.height/2), s );
     bottom.trs = mult( translate(bottomX, y, this.height/2), s );
     this.pillars.push(top);
     this.pillars.push(bottom);
   }
-  // along length
+  // pillars along length
   var gap = (this.width-diam*6)/5;
   for(var i = 1; i < 5; ++i){
     var x = this.loc[0]-this.width/2 + (diam/2) + (i*(diam+gap));//diam+this.width/5/2));
@@ -445,8 +365,6 @@ function Parthenon(vLoc, fScale){
     var bottomY = this.loc[1]-this.length/2+diam/2;
     var top = new Cylinder(this.color);
     var bottom = new Cylinder(this.color);
-    // var top = new Cylinder(vec4(0.1,0.1,0.1,1));
-    // var bottom = new Cylinder(vec4(0.1,0.1,0.1,1));
     var s = scalem(diam, diam, this.height); // maybe this shouldnt be height
     top.setTrs( mult( translate(x, topY, this.height/2), s ) );
     bottom.setTrs( mult( translate(x, bottomY, this.height/2), s ) );
@@ -454,7 +372,6 @@ function Parthenon(vLoc, fScale){
     this.pillars.push(bottom);
   }
   // lintels
-  // loc, widht, length, height, color
   this.lintels.push( new Cube( vec3(this.loc[0], this.loc[1]-this.length/2+diam/2, this.height+0.25*fScale),
                     this.width, diam, this.lintelHeight, this.color) );
   this.lintels.push( new Cube( vec3(this.loc[0], this.loc[1]+this.length/2-diam/2, this.height+0.25*fScale),
@@ -466,7 +383,6 @@ function Parthenon(vLoc, fScale){
 
 
   var s = scalem(this.width, this.length, 1);
-  // var s = scalem(this.width, this.length, this.height);
   var t = translate(vLoc[0], vLoc[1], vLoc[2]);
   this.setTrs( mult( t, s ) );
 }
@@ -479,8 +395,8 @@ Parthenon.prototype.draw = function(){
   for(var i = 0; i < this.lintels.length; ++i){
     this.lintels[i].draw();
   }
-
 }
+
 Parthenon.prototype.setTrs = function(trs){
   this.trs = trs;
 
@@ -489,6 +405,7 @@ Parthenon.prototype.setTrs = function(trs){
 
   this.roof.setTrs( mult( translate(this.loc[0], this.loc[1], this.loc[2] + this.height/2 + this.lintelHeight), scalem(this.width, this.length, this.height) ) );
 }
+
 // Parthenon.WIDTH = 8;
 // Parthenon.HEIGHT = 8;
 // Parthenon.LENGTH = 13;
